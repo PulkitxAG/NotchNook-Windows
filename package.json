@@ -1,0 +1,27 @@
+{
+  "name": "notchnookclone",
+  "version": "1.0.0",
+  "description": "Dynamic Island clone for Windows 11",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.pulki.notchnookclone",
+    "productName": "NotchNook Clone",
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^42.3.3",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "@coooookies/windows-smtc-monitor": "^1.0.12",
+    "loudness": "^0.4.2"
+  }
+}
