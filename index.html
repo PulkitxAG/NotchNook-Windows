@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NotchNook Clone</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+</head>
+<body>
+  <div class="island-container" id="island">
+    <!-- Compact View -->
+    <div class="compact-view" id="compactView">
+      <div class="pill-indicator"></div>
+    </div>
+    
+    <!-- Expanded View -->
+    <div class="expanded-view" id="expandedView">
+      <!-- Header / Tabs (Now global) -->
+      <div class="top-tabs">
+        <span class="tab active" data-target="nookPane"><span class="material-symbols-rounded tab-icon">push_pin</span> Nook</span>
+        <span class="tab" data-target="clipsPane"><span class="material-symbols-rounded tab-icon">content_paste</span> Clipboard</span>
+      </div>
+
+      <!-- Nook Pane -->
+      <div class="nook-pane" id="nookPane">
+        <div class="dual-pane">
+          <!-- Left Side: Media -->
+          <div class="left-pane">
+            <div class="media-content">
+              <div class="album-container">
+                <div class="album-art" id="albumArt">
+                  <div class="visualizer" id="visualizer">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                  </div>
+                </div>
+                <div class="album-badge"><span class="material-symbols-rounded" style="font-size:12px;">music_note</span></div>
+              </div>
+              <div class="track-details">
+                <div class="track-title" id="trackTitle">Not playing</div>
+                <div class="track-artist" id="trackArtist">...</div>
+              </div>
+            </div>
+            
+            <div class="media-controls">
+              <button class="btn" title="Previous">&#x23EE;&#xFE0E;</button>
+              <button class="btn play-btn" title="Play/Pause">&#x23F8;&#xFE0E;</button>
+              <button class="btn" title="Next">&#x23ED;&#xFE0E;</button>
+            </div>
+            <input type="range" min="0" max="100" value="50" class="vol-slider" id="volSlider" title="Master Volume">
+          </div>
+          
+          <!-- Right Side: Calendar & Widgets -->
+          <div class="right-pane">
+            <div class="calendar-header">
+              <div class="month-title" id="monthTitle">Jun</div>
+              <div class="days-list" id="daysList"></div>
+            </div>
+            
+            <div class="system-stats" id="systemStats">
+              <div class="stat-badge"><span class="material-symbols-rounded stat-icon">battery_std</span> <span id="battText">--%</span></div>
+              <div class="stat-badge"><span class="material-symbols-rounded stat-icon" id="weatherIcon">cloud</span> <span id="weatherText">--°</span></div>
+            </div>
+            
+            <div class="quick-apps">
+              <div class="app-btn" data-app="calc" title="Calculator"><span class="material-symbols-rounded">calculate</span></div>
+              <div class="app-btn" data-app="notepad" title="Notepad"><span class="material-symbols-rounded">description</span></div>
+              <div class="app-btn" data-app="explorer" title="Files"><span class="material-symbols-rounded">folder</span></div>
+              <div class="app-btn" data-app="chrome" title="Browser"><span class="material-symbols-rounded">language</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Clips Pane -->
+      <div class="clips-pane" id="clipsPane" style="display: none;">
+        <div class="clips-title">Recent Clips</div>
+        <div class="clips-list" id="clipsList">
+          <div style="color: rgba(255,255,255,0.4); text-align: center; margin-top: 20px;">Copy some text to see it here!</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
