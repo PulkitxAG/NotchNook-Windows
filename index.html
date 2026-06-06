@@ -3,15 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>NotchNook Clone</title>
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="island-container" id="island">
-    <!-- Compact View -->
-    <div class="compact-view" id="compactView">
-      <div class="pill-indicator"></div>
-    </div>
+      <!-- Compact View -->
+      <div class="compact-view">
+        <div class="pill-indicator"></div>
+        <div id="compact-weather" style="display: none; position: absolute; right: 35px; align-items: center; gap: 4px;">
+          <span id="compact-weather-temp" style="font-size: 13px; font-weight: 700; color: #fff;">--°</span>
+          <span class="material-symbols-rounded" id="compact-weather-icon" style="font-size: 16px; color: #24d160;">cloud</span>
+        </div>
+      </div>
     
     <!-- Expanded View -->
     <div class="expanded-view" id="expandedView">
@@ -24,6 +29,7 @@
       <!-- Nook Pane -->
       <div class="nook-pane" id="nookPane">
         <div class="dual-pane">
+          <!-- Left Side: Media -->
           <!-- Left Side: Media -->
           <div class="left-pane">
             <div class="media-content">
@@ -73,10 +79,20 @@
 
       <!-- Clips Pane -->
       <div class="clips-pane" id="clipsPane" style="display: none;">
-        <div class="clips-title">Recent Clips</div>
-        <div class="clips-list" id="clipsList">
+        <!-- Clipboard Tab -->
+        <div class="tab-content" id="content-clips" style="display: none;">
+          <div id="clips-list" class="clips-list"></div>
           <div style="color: rgba(255,255,255,0.4); text-align: center; margin-top: 20px;">Copy some text to see it here!</div>
         </div>
+      </div>
+      
+      <!-- Silent Auto Updater Banner -->
+      <div id="updateBanner" class="update-banner" style="display: none;">
+        <div class="update-info">
+          <span class="material-symbols-rounded">system_update</span>
+          <span id="updateText">Update vX.X.X Available!</span>
+        </div>
+        <button id="updateBtn">Install Update</button>
       </div>
 
     </div>

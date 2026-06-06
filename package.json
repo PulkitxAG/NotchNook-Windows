@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "npx electron-packager . \"NotchNookClone\" --platform=win32 --arch=x64 --out=dist --overwrite --asar"
   },
   "build": {
     "appId": "com.pulki.notchnookclone",
@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@coooookies/windows-smtc-monitor": "^1.0.12",
-    "loudness": "^0.4.2"
+    "loudness": "^0.4.2",
+    "v8-compile-cache": "^2.4.0"
   }
 }

@@ -25,10 +25,8 @@ body {
 * { box-sizing: border-box; }
 
 .island-container {
-  /* Absolute pure black */
-  background: #000000;
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  /* Ultra-lightweight solid background to prevent GPU blur penalty */
+  background: rgba(10, 10, 10, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 20px;
   /* Completely removed drop-shadow to eliminate any "black shade" hovering around the edge */
@@ -36,7 +34,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: width 0.2s cubic-bezier(0.32, 0.72, 0, 1), height 0.2s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.2s cubic-bezier(0.32, 0.72, 0, 1);
   width: 120px;
   height: 35px;
   cursor: pointer;
@@ -48,6 +46,19 @@ body {
   height: 200px; 
   border-radius: 40px;
   cursor: default;
+}
+
+/* Battery Hardware Interrupt Glows */
+.island-container.charging-glow {
+  box-shadow: 0 0 25px rgba(36, 209, 96, 0.5) !important;
+  border: 1px solid rgba(36, 209, 96, 0.8) !important;
+  transition: box-shadow 0.5s ease, border-color 0.5s ease;
+}
+
+.island-container.low-battery-glow {
+  box-shadow: 0 0 25px rgba(255, 60, 60, 0.5) !important;
+  border: 1px solid rgba(255, 60, 60, 0.8) !important;
+  transition: box-shadow 0.5s ease, border-color 0.5s ease;
 }
 
 .compact-view {
@@ -82,7 +93,7 @@ body {
   flex-direction: column;
   opacity: 0;
   transform: scale(0.9) translateY(-10px);
-  transition: all 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: opacity 0.15s cubic-bezier(0.32, 0.72, 0, 1), transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
   pointer-events: none;
 }
 .island-container.expanded .expanded-view {
@@ -234,19 +245,24 @@ body {
 }
 .visualizer.playing { opacity: 1; }
 .bar {
-  width: 4px; height: 4px;
+  width: 4px; height: 24px;
   background: #fff;
   border-radius: 2px;
-  transition: height 0.1s;
+  transform-origin: bottom;
+  transform: scaleY(0.16);
 }
 .visualizer.playing .bar {
   animation: bounce 0.6s infinite alternate;
+  animation-play-state: paused;
+}
+.island-container:hover .visualizer.playing .bar {
+  animation-play-state: running;
 }
 .visualizer.playing .bar:nth-child(2) { animation-delay: 0.2s; }
 .visualizer.playing .bar:nth-child(3) { animation-delay: 0.4s; }
 @keyframes bounce {
-  0% { height: 4px; }
-  100% { height: 24px; }
+  0% { transform: scaleY(0.16); }
+  100% { transform: scaleY(1); }
 }
 
 /* Volume Slider */
@@ -354,7 +370,7 @@ body {
   color: rgba(255,255,255,0.85);
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: background-color 0.2s, transform 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -428,7 +444,7 @@ body {
   justify-content: center;
   gap: 8px;
   color: rgba(255, 255, 255, 0.6);
-  transition: all 0.2s;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
   cursor: pointer;
   user-select: none;
   -webkit-user-drag: element;
@@ -443,3 +459,40 @@ body {
 }
 .file-icon { font-size: 32px; }
 .file-name { font-size: 14px; font-weight: 500; }
+
+/* Auto Updater Banner */
+.update-banner {
+  position: absolute;
+  bottom: 0; left: 0; width: 100%;
+  background: linear-gradient(90deg, rgba(36,209,96,0.15) 0%, rgba(36,209,96,0.02) 100%);
+  border-top: 1px solid rgba(36,209,96,0.3);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+  z-index: 100;
+}
+.update-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #24d160;
+  font-weight: 600;
+  font-size: 13px;
+}
+#updateBtn {
+  background: #24d160;
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1), background-color 0.2s;
+}
+#updateBtn:hover { transform: scale(1.05); }
+#updateBtn:active { transform: scale(0.95); }
+#updateBtn:disabled { background: rgba(255,255,255,0.2); color: #fff; cursor: default; }

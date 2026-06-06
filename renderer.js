@@ -1,4 +1,4 @@
-const { ipcRenderer, clipboard } = require('electron');
+
 
 const island = document.getElementById('island');
 const COMPACT_WIDTH = 160, COMPACT_HEIGHT = 75; 
@@ -7,24 +7,34 @@ const EXPANDED_WIDTH = 520, EXPANDED_HEIGHT = 240;
 
 let isExpanded = false;
 let expansionTimeout;
+let hoverDebounce;
 
 function expandIsland() {
-  clearTimeout(expansionTimeout);
-  if (!isExpanded) {
-    isExpanded = true;
-    ipcRenderer.send('resize-window', EXPANDED_WIDTH, EXPANDED_HEIGHT);
-    island.classList.add('expanded');
-  }
+  clearTimeout(hoverDebounce);
+  hoverDebounce = setTimeout(() => {
+    clearTimeout(expansionTimeout);
+    if (!isExpanded) {
+      isExpanded = true;
+      window.electronAPI.resizeWindow(EXPANDED_WIDTH, EXPANDED_HEIGHT);
+      island.classList.add('expanded');
+      window.electronAPI.getVolume();
+      window.electronAPI.resumeBackground(); // Wake up the heavy native API monitor
+    }
+  }, 60);
 }
 
 function collapseIsland() {
-  expansionTimeout = setTimeout(() => {
-    if (isExpanded) {
-      isExpanded = false;
-      island.classList.remove('expanded');
-      setTimeout(() => { if (!isExpanded) ipcRenderer.send('resize-window', COMPACT_WIDTH, COMPACT_HEIGHT); }, 200);
-    }
-  }, 100);
+  clearTimeout(hoverDebounce);
+  hoverDebounce = setTimeout(() => {
+    expansionTimeout = setTimeout(() => {
+      if (isExpanded) {
+        isExpanded = false;
+        island.classList.remove('expanded');
+        window.electronAPI.suspendBackground(); // Kill the heavy native API monitor instantly!
+        setTimeout(() => { if (!isExpanded) window.electronAPI.resizeWindow(COMPACT_WIDTH, COMPACT_HEIGHT); }, 200);
+      }
+    }, 100);
+  }, 60);
 }
 
 island.addEventListener('mouseenter', expandIsland);
@@ -33,32 +43,28 @@ island.addEventListener('mouseleave', collapseIsland);
 // Allow drag to trigger expansion
 document.addEventListener('dragenter', expandIsland);
 
-ipcRenderer.on('toggle-expansion', () => {
+window.electronAPI.onToggleExpansion(() => {
   if (isExpanded) collapseIsland();
   else expandIsland();
 });
 
-// TABS
-const tabs = document.querySelectorAll('.tab');
+// 3) Global Nook vs Clips Switching
+const topTabs = document.querySelectorAll('.top-tabs .tab');
 const panes = {
   nookPane: document.getElementById('nookPane'),
   clipsPane: document.getElementById('clipsPane')
 };
 
-tabs.forEach(tab => {
+topTabs.forEach(tab => {
   tab.addEventListener('click', (e) => {
     e.stopPropagation();
-    tabs.forEach(t => t.classList.remove('active'));
+    topTabs.forEach(t => t.classList.remove('active'));
     tab.classList.add('active');
     
-    Object.keys(panes).forEach(k => {
-      panes[k].style.display = 'none';
-    });
+    Object.keys(panes).forEach(k => panes[k].style.display = 'none');
     panes[tab.dataset.target].style.display = 'flex';
   });
 });
-
-// MEDIA
 const trackTitle = document.getElementById('trackTitle');
 const trackArtist = document.getElementById('trackArtist');
 const albumArt = document.getElementById('albumArt');
@@ -74,7 +80,7 @@ function triggerOptimisticUI() {
   mediaUpdateTimeout = setTimeout(() => { ignoreMediaUpdates = false; }, 2000);
 }
 
-ipcRenderer.on('media-update', (event, media) => {
+window.electronAPI.onMediaUpdate((media) => {
   if (media) {
     trackTitle.textContent = media.title || 'Unknown Title';
     trackArtist.textContent = media.artist || 'Unknown Artist';
@@ -96,9 +102,9 @@ ipcRenderer.on('media-update', (event, media) => {
 
 const btns = document.querySelectorAll('.media-controls .btn');
 if (btns.length === 3) {
-  btns[0].addEventListener('click', () => ipcRenderer.send('media-control', 'prev'));
+  btns[0].addEventListener('click', () => window.electronAPI.mediaControl('prev'));
   btns[1].addEventListener('click', () => {
-    ipcRenderer.send('media-control', 'playpause');
+    window.electronAPI.mediaControl('playpause');
     triggerOptimisticUI();
     // Optimistic UI Update for instant feedback
     if (playBtn.textContent === '\u23F8\uFE0E') {
@@ -109,13 +115,13 @@ if (btns.length === 3) {
       visualizer.classList.add('playing');
     }
   });
-  btns[2].addEventListener('click', () => ipcRenderer.send('media-control', 'next'));
+  btns[2].addEventListener('click', () => window.electronAPI.mediaControl('next'));
 }
 
 // VOLUME
 const volSlider = document.getElementById('volSlider');
-volSlider.addEventListener('input', (e) => { ipcRenderer.send('set-volume', e.target.value); });
-ipcRenderer.on('current-volume', (e, vol) => { volSlider.value = vol; });
+volSlider.addEventListener('input', (e) => { window.electronAPI.setVolume(e.target.value); });
+window.electronAPI.onCurrentVolume((vol) => { volSlider.value = vol; });
 
 // CALENDAR (Static)
 const daysList = document.getElementById('daysList');
@@ -158,7 +164,7 @@ fetch('https://api.open-meteo.com/v1/forecast?latitude=40.71&longitude=-74.00&cu
 
 // QUICK APPS
 document.querySelectorAll('.app-btn').forEach(btn => {
-  btn.addEventListener('click', (e) => { e.stopPropagation(); ipcRenderer.send('launch-app', btn.dataset.app); });
+  btn.addEventListener('click', (e) => { e.stopPropagation(); window.electronAPI.launchApp(btn.dataset.app); });
 });
 
 // CLIPBOARD HISTORY
@@ -166,7 +172,7 @@ let clipboardHistory = [];
 const clipsList = document.getElementById('clipsList');
 
 setInterval(() => {
-  const text = clipboard.readText();
+  const text = window.electronAPI.readClipboard();
   if (text && text.trim() !== '') {
     if (clipboardHistory[0] !== text) {
       clipboardHistory.unshift(text);
@@ -174,7 +180,7 @@ setInterval(() => {
       renderClips();
     }
   }
-}, 1000);
+}, 5000);
 
 function renderClips() {
   clipsList.innerHTML = '';
@@ -184,10 +190,125 @@ function renderClips() {
     el.textContent = clip.length > 60 ? clip.substring(0, 60) + '...' : clip;
     el.title = clip;
     el.addEventListener('click', () => {
-      clipboard.writeText(clip);
+      window.electronAPI.writeClipboard(clip);
       el.style.background = 'rgba(77, 166, 255, 0.4)';
       setTimeout(() => el.style.background = '', 200);
     });
     clipsList.appendChild(el);
   });
 }
+
+// AUTO UPDATER UI
+const updateBanner = document.getElementById('updateBanner');
+const updateText = document.getElementById('updateText');
+const updateBtn = document.getElementById('updateBtn');
+
+window.electronAPI.onUpdateAvailable((version) => {
+  updateText.textContent = `Update v${version} Available!`;
+  updateBanner.style.display = 'flex';
+});
+
+window.electronAPI.onUpdateProgress((progress) => {
+  if (progress === 'DEV_MOCK_SUCCESS') {
+    updateBtn.textContent = 'Restarting App...';
+  } else {
+    updateBtn.textContent = `Downloading ${progress}%`;
+    updateBtn.disabled = true;
+  }
+});
+
+updateBtn.addEventListener('click', () => {
+  window.electronAPI.startUpdate();
+  updateBtn.textContent = 'Starting...';
+  updateBtn.disabled = true;
+});
+
+// --- BATTERY HARDWARE INTERRUPT (0.00% CPU) ---
+if ('getBattery' in navigator) {
+  navigator.getBattery().then(battery => {
+    let lastBatteryLevel = -1;
+    let lastBatteryCharging = null;
+    
+    function updateBatteryUI() {
+      // 1. DOM Thrashing Prevention (Only touch the DOM if the literal percentage or charging state actually changes)
+      const levelInt = Math.round(battery.level * 100);
+      if (levelInt === lastBatteryLevel && battery.charging === lastBatteryCharging) return;
+      lastBatteryLevel = levelInt;
+      lastBatteryCharging = battery.charging;
+
+      const island = document.getElementById('island');
+      island.classList.remove('charging-glow', 'low-battery-glow');
+      
+      if (battery.charging) {
+        // Flash bright green for 3 seconds when plugged into power!
+        island.classList.add('charging-glow');
+        setTimeout(() => {
+          island.classList.remove('charging-glow');
+        }, 3000);
+      } else if (battery.level <= 0.20) {
+        // Glow angry red if unplugged and battery is critically low (20%)
+        island.classList.add('low-battery-glow');
+      }
+    }
+
+    // Instead of looping, we just tell the system: "Wake me up if the cable is plugged in or the percentage drops"
+    battery.addEventListener('chargingchange', updateBatteryUI);
+    battery.addEventListener('levelchange', updateBatteryUI);
+    
+    // Check once on boot to see if they are already dying
+    if (battery.level <= 0.20 && !battery.charging) {
+      updateBatteryUI();
+    }
+  });
+}
+
+// --- WEATHER WIDGET (Zero API Keys) ---
+let cachedGeo = null; // 2. Memory Network Caching
+
+async function fetchWeather() {
+  if (!navigator.onLine) return; // 3. Sleep Mode / Offline Suspension
+
+  try {
+    let lat, lon, city;
+
+    if (!cachedGeo) {
+      // Use a secure HTTPS IP Geolocation service
+      const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+      const geoData = await geoRes.json();
+      cachedGeo = { lat: geoData.latitude, lon: geoData.longitude, city: geoData.city };
+    }
+    
+    lat = cachedGeo.lat;
+    lon = cachedGeo.lon;
+    city = cachedGeo.city;
+    
+    // Fetch Free Live Weather Data using the precise coordinates
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+    const weatherData = await weatherRes.json();
+    const cw = weatherData.current_weather;
+    
+    // Map numerical weather codes to beautiful Material Icons and colors
+    const code = cw.weathercode;
+    let icon = 'cloud';
+    let desc = 'Unknown';
+    let color = '#fff';
+
+    if (code === 0) { icon = 'sunny'; desc = 'Clear Sky'; color = '#FFD700'; } // Yellow
+    else if (code >= 1 && code <= 3) { icon = 'partly_cloudy_day'; desc = 'Cloudy'; color = '#A0C4FF'; } // Light Blue
+    else if (code >= 45 && code <= 48) { icon = 'foggy'; desc = 'Fog'; color = '#B0BEC5'; } // Gray
+    else if (code >= 51 && code <= 67) { icon = 'rainy'; desc = 'Rain'; color = '#64B5F6'; } // Blue
+    else if (code >= 71 && code <= 77) { icon = 'weather_snowy'; desc = 'Snow'; color = '#E0F7FA'; } // Ice White
+    else if (code >= 80 && code <= 82) { icon = 'rainy'; desc = 'Showers'; color = '#42A5F5'; }
+    else if (code >= 95) { icon = 'thunderstorm'; desc = 'Storm'; color = '#FF5252'; } // Red
+
+    // Update the Expanded View Widget
+    document.getElementById('weatherIcon').textContent = icon;
+    document.getElementById('weatherIcon').style.color = color;
+    document.getElementById('weatherText').textContent = Math.round(cw.temperature) + '°';
+
+  } catch (error) {}
+}
+
+// Fetch on boot, then every 30 minutes
+fetchWeather();
+setInterval(fetchWeather, 30 * 60 * 1000);
