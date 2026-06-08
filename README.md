@@ -43,16 +43,6 @@ Hovering over the notch instantly expands it into a fully-featured productivity 
 2. Double-click the `.exe` to launch. No installation required! (It runs silently in the background).
 3. Press `Alt + N` to hide/unhide it anytime.
 
-## 🛠 Building from Source
-
-If you want to compile NotchNook yourself:
-1. Ensure you have the [.NET 8.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) installed.
-2. Clone this repository.
-3. Run the following command to build a highly-optimized, single-file executable:
-   ```bash
-   dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
-   ```
-
 ## 📁 Repository Structure
 
 - **`/` (Root):** The official, high-performance C# WPF native Windows application.
