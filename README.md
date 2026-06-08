@@ -6,8 +6,10 @@ A sleek, premium, macOS-style "notch" desktop widget for Windows. NotchNook acts
 
 Since NotchNook operates as a stealth background widget without taskbar clutter, you control it entirely via global hotkeys:
 
-- **`Alt + N`** : **Hide / Unhide**. Instantly toggles the visibility of the Notch on your screen without killing the app. (Note: NotchNook features a Smart Auto-Hide engine that will also automatically hide itself if you enter a fullscreen game or application).
-- **`Alt + Shift + Q`** : **Force Quit**. Completely shuts down the NotchNook background process and frees up system resources. 
+| Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| **`Alt + N`** | **Hide / Unhide** | Instantly toggles the visibility of the Notch on your screen without killing the app. (Note: NotchNook features a Smart Auto-Hide engine that will also automatically hide itself if you enter a fullscreen game). |
+| **`Alt + Shift + Q`** | **Force Quit** | Completely shuts down the NotchNook background process and frees up system resources. |
 
 ---
 
