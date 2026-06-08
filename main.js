@@ -8,10 +8,15 @@ const os = require('os');
 
 // Hardcore Chromium Engine Optimizations to save RAM and CPU
 app.commandLine.appendSwitch('disable-site-isolation-trials'); // Kills the heavy security vault
-app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling'); // Stops keyboard fighting
+app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,CalculateNativeWinOcclusion'); // Stops keyboard fighting and kills the heavy Windows DWM occlusion math
 app.commandLine.appendSwitch('disable-metrics'); // Kills background tracking
 app.commandLine.appendSwitch('disable-crash-reporter'); // Kills crash tracking
 app.commandLine.appendSwitch('js-flags', '--expose-gc --max-old-space-size=64'); // Forces aggressive memory cleanup and manual sweeps
+
+// Force ultra-aggressive GPU hardware acceleration
+app.commandLine.appendSwitch('enable-gpu-rasterization'); // Forces GPU to draw all pixels
+app.commandLine.appendSwitch('enable-zero-copy'); // Bypasses CPU memory when sending frames to the GPU
+app.commandLine.appendSwitch('disable-software-rasterizer'); // Physically blocks the CPU from attempting to draw UI
 
 let mainWindow;
 
@@ -19,9 +24,9 @@ function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width } = primaryDisplay.workAreaSize;
 
-  // Adding 40px to width/height to account for 20px padding on all sides for the drop shadow
-  const initialWidth = 160;
-  const initialHeight = 75;
+  // Lock window to the maximum expanded size to physically prevent DWM clipping!
+  const initialWidth = 520;
+  const initialHeight = 240;
 
   mainWindow = new BrowserWindow({
     width: initialWidth,
@@ -43,14 +48,88 @@ function createWindow() {
   });
 
   mainWindow.loadFile('index.html');
+  
+  // Set window to ignore clicks by default
+  mainWindow.setIgnoreMouseEvents(true);
+
+  // Hardcore Native Cursor Polling Engine (Bypasses UIPI & DWM)
+  let hitbox = { w: 120, h: 35 };
+  let isMouseOver = false;
+  
+  ipcMain.on('set-hitbox', (event, w, h) => { hitbox = { w, h }; });
+
+  let mousePollInterval = null;
+  
+  // Cache the screen width so we don't query the Windows Display Driver 40 times a second!
+  let cachedScreenWidth = screen.getPrimaryDisplay().workAreaSize.width;
+  screen.on('display-metrics-changed', () => {
+    cachedScreenWidth = screen.getPrimaryDisplay().workAreaSize.width;
+  });
+  
+  const pollLogic = () => {
+    if (!mainWindow) return;
+    const point = screen.getCursorScreenPoint();
+    
+    const islandX = (cachedScreenWidth - hitbox.w) / 2;
+    const islandY = 20;
+    
+    const isInside = (
+      point.y >= islandY - 5 && 
+      point.y <= islandY + hitbox.h + 5 && 
+      point.x >= islandX - 5 && 
+      point.x <= islandX + hitbox.w + 5
+    );
+    
+    if (isInside && !isMouseOver) {
+      isMouseOver = true;
+      mainWindow.setIgnoreMouseEvents(false);
+      mainWindow.webContents.send('hover-enter');
+      
+      // DYNAMIC CPU UNDERVOLTING: Drop native C++ polling to 4 FPS!
+      clearInterval(mousePollInterval);
+      mousePollInterval = setInterval(pollLogic, 250);
+      
+    } else if (!isInside && isMouseOver) {
+      isMouseOver = false;
+      mainWindow.setIgnoreMouseEvents(true);
+      mainWindow.webContents.send('hover-leave');
+      
+      // BOOST: Jump back to 40 FPS to catch fast mouse movements over the tiny island
+      clearInterval(mousePollInterval);
+      mousePollInterval = setInterval(pollLogic, 25);
+    }
+  };
+
+  const startMousePolling = () => {
+    if (mousePollInterval) return;
+    mousePollInterval = setInterval(pollLogic, 25);
+  };
+
+  const stopMousePolling = () => {
+    if (mousePollInterval) {
+      clearInterval(mousePollInterval);
+      mousePollInterval = null;
+    }
+  };
+
+  startMousePolling();
+
+  // OS-Level Battery Optimization: Kill the mouse polling loop if the screen locks or PC sleeps
+  powerMonitor.on('suspend', stopMousePolling);
+  powerMonitor.on('lock-screen', stopMousePolling);
+  powerMonitor.on('resume', startMousePolling);
+  powerMonitor.on('unlock-screen', startMousePolling);
 
   // mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
 app.whenReady().then(() => {
   // Tell Windows to launch this app the second the PC turns on
+  const isPackaged = __dirname.includes('app.asar') || process.execPath.toLowerCase().includes('notchnookclone.exe');
   app.setLoginItemSettings({
-    openAtLogin: true
+    openAtLogin: true,
+    path: process.execPath,
+    args: isPackaged ? [] : [__dirname]
   });
 
   createWindow();
@@ -105,20 +184,7 @@ app.on('window-all-closed', function () {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// Handle resize requests from renderer
-ipcMain.on('resize-window', (event, newWidth, newHeight) => {
-  if (mainWindow) {
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width } = primaryDisplay.workAreaSize;
-    
-    mainWindow.setBounds({
-      width: newWidth,
-      height: newHeight,
-      x: Math.round((width - newWidth) / 2),
-      y: 0
-    });
-  }
-});
+// Legacy resize-window removed in favor of static bounds + native polling.
 
 // Spawn a standard Node process for SMTC to avoid Electron ABI mismatch crashes
 const smtcWorker = fork(path.join(__dirname, 'smtc-worker.js'));

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    background: #333;
+    display: flex;
+    justify-content: center;
+    padding-top: 50px;
+  }
+
+  /* The wrapper reserves the maximum space (480x200) */
+  .island-wrapper {
+    position: relative;
+    width: 480px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* LAYER 1: The Black Box. It never changes width or height! It only scales. */
+  .island-background {
+    position: absolute;
+    top: 0;
+    width: 480px;
+    height: 200px;
+    background: black;
+    border-radius: 100px; /* Massive radius so it stays round when squished */
+    
+    /* Shrink the 480x200 box down to exactly 120x35 using math: */
+    /* 120 / 480 = 0.25 scaleX */
+    /* 35 / 200 = 0.175 scaleY */
+    transform: scaleX(0.25) scaleY(0.175);
+    transform-origin: top center;
+    
+    /* Bouncy GPU-Accelerated Animation */
+    transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* LAYER 2: The expanded content that sits ON TOP of the background */
+  .expanded-content {
+    position: absolute;
+    top: 0;
+    width: 480px;
+    height: 200px;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.3s ease;
+  }
+
+  /* LAYER 3: The compact content */
+  .compact-content {
+    position: absolute;
+    top: 0;
+    width: 120px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: opacity 0.2s ease;
+  }
+
+  /* --- HOVER PHYSICS --- */
+  /* When hovering anywhere in the wrapper, scale the background back to 100%! */
+  .island-wrapper:hover .island-background {
+    transform: scaleX(1) scaleY(1);
+  }
+
+  /* Fade in the large content */
+  .island-wrapper:hover .expanded-content {
+    opacity: 1;
+  }
+
+  /* Fade out the tiny content */
+  .island-wrapper:hover .compact-content {
+    opacity: 0;
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Try hovering over this! -->
+  <div class="island-wrapper">
+    <div class="island-background"></div>
+    <div class="compact-content">🎵</div>
+    <div class="expanded-content"><h2>Wow! Zero CPU Usage!</h2></div>
+  </div>
+
+</body>
+</html>

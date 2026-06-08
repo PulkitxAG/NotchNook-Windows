@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <rect x="2" y="14" width="4" height="8" fill="white" rx="2">
+    <animate attributeName="height" values="8;20;8" dur="0.6s" repeatCount="indefinite" />
+    <animate attributeName="y" values="14;2;14" dur="0.6s" repeatCount="indefinite" />
+  </rect>
+  <rect x="10" y="6" width="4" height="16" fill="white" rx="2">
+    <animate attributeName="height" values="16;6;16" dur="0.6s" repeatCount="indefinite" />
+    <animate attributeName="y" values="6;16;6" dur="0.6s" repeatCount="indefinite" />
+  </rect>
+  <rect x="18" y="12" width="4" height="10" fill="white" rx="2">
+    <animate attributeName="height" values="10;18;10" dur="0.6s" repeatCount="indefinite" />
+    <animate attributeName="y" values="12;4;12" dur="0.6s" repeatCount="indefinite" />
+  </rect>
+</svg>

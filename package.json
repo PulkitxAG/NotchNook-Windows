@@ -1,6 +1,6 @@
 {
   "name": "notchnookclone",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Dynamic Island clone for Windows 11",
   "main": "main.js",
   "scripts": {

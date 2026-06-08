@@ -25,51 +25,70 @@ body {
 * { box-sizing: border-box; }
 
 .island-container {
-  /* Ultra-lightweight solid background to prevent GPU blur penalty */
-  background: rgba(10, 10, 10, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 20px;
-  /* Completely removed drop-shadow to eliminate any "black shade" hovering around the edge */
-  box-shadow: none;
+  width: 480px;
+  height: 200px;
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  transition: width 0.2s cubic-bezier(0.32, 0.72, 0, 1), height 0.2s cubic-bezier(0.32, 0.72, 0, 1), border-radius 0.2s cubic-bezier(0.32, 0.72, 0, 1);
-  width: 120px;
-  height: 35px;
-  cursor: pointer;
+  justify-content: center;
   position: relative;
 }
 
-.island-container.expanded {
+/* Layer 1: GPU Background */
+.island-background {
+  position: absolute;
+  top: 0;
   width: 480px;
-  height: 200px; 
+  height: 200px;
+  background: rgba(10, 10, 10, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  /* 
+     Elliptical Math to counteract the GPU scale squish! 
+     17.5px radius / 0.25 scaleX = 70px
+     17.5px radius / 0.175 scaleY = 100px
+  */
+  border-radius: 70px / 100px;
+  box-shadow: none;
+  transform: scaleX(0.25) scaleY(0.175);
+  transform-origin: top center;
+  /* CRITICAL: Never animate border-radius! It forces CPU Layout recalculations! */
+  transition: transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+  cursor: pointer;
+  
+  /* Force a dedicated GPU hardware layer for the island background! */
+  will-change: transform;
+}
+
+.island-container.expanded .island-background {
+  transform: scaleX(1) scaleY(1);
   border-radius: 40px;
   cursor: default;
 }
 
 /* Battery Hardware Interrupt Glows */
-.island-container.charging-glow {
+.island-container.charging-glow .island-background {
   box-shadow: 0 0 25px rgba(36, 209, 96, 0.5) !important;
   border: 1px solid rgba(36, 209, 96, 0.8) !important;
   transition: box-shadow 0.5s ease, border-color 0.5s ease;
 }
 
-.island-container.low-battery-glow {
+.island-container.low-battery-glow .island-background {
   box-shadow: 0 0 25px rgba(255, 60, 60, 0.5) !important;
   border: 1px solid rgba(255, 60, 60, 0.8) !important;
   transition: box-shadow 0.5s ease, border-color 0.5s ease;
 }
 
 .compact-view {
-  width: 100%;
-  height: 100%;
+  width: 120px;
+  height: 35px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: absolute;
-  top: 0; left: 0;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
   transition: opacity 0.3s ease;
+  
+  /* Force GPU layer for the crossfade */
+  will-change: opacity;
 }
 .pill-indicator {
   width: 6px;
@@ -86,6 +105,8 @@ body {
 }
 
 .expanded-view {
+  position: absolute;
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
   padding: 16px;
@@ -94,13 +115,27 @@ body {
   opacity: 0;
   transform: scale(0.9) translateY(-10px);
   transition: opacity 0.15s cubic-bezier(0.32, 0.72, 0, 1), transform 0.15s cubic-bezier(0.32, 0.72, 0, 1);
+  
+  /* Force GPU layer for the massive expanded view! */
+  will-change: transform, opacity;
   pointer-events: none;
 }
 .island-container.expanded .expanded-view {
   opacity: 1;
   transform: scale(1) translateY(0);
-  pointer-events: all;
+  /* CRITICAL HIT-TESTING OPTIMIZATION: Keep the main wrapper invisible to the mouse! */
+  pointer-events: none;
   transition-delay: 0.05s;
+}
+
+/* ONLY re-enable the mouse on the exact buttons the user can click! */
+.island-container.expanded .btn,
+.island-container.expanded .tab,
+.island-container.expanded .app-btn,
+.island-container.expanded .vol-slider,
+.island-container.expanded .clips-list,
+.island-container.expanded .calendar-header {
+  pointer-events: auto;
 }
 
 /* Dual Pane Layout */
@@ -139,6 +174,9 @@ body {
   align-items: center;
   gap: 6px;
   cursor: pointer;
+  /* Force GPU Layer for hover color/opacity transitions */
+  will-change: transform, opacity;
+  transition: opacity 0.2s;
 }
 .tab.active { color: #fff; }
 .tab-icon { font-size: 14px; margin-right: -4px; }
@@ -199,11 +237,23 @@ body {
 .track-artist {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.7);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 .track-album {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.4);
   margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
 .media-controls {
@@ -221,6 +271,8 @@ body {
   opacity: 0.8;
   font-family: 'Segoe UI Symbol', sans-serif;
   transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s;
+  /* Force GPU Layer for rapid hover opacity/scale changes */
+  will-change: transform, opacity;
 }
 .btn:active {
   transform: scale(0.75);
@@ -236,34 +288,20 @@ body {
   top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.5);
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
   opacity: 0;
   transition: opacity 0.3s;
 }
 .visualizer.playing { opacity: 1; }
-.bar {
-  width: 4px; height: 24px;
-  background: #fff;
-  border-radius: 2px;
-  transform-origin: bottom;
-  transform: scaleY(0.16);
+
+/* The Animated SVG Trick */
+.island-container:hover .visualizer.playing {
+  background-image: url('./visualizer.svg');
+  background-position: center;
+  background-repeat: no-repeat;
 }
-.visualizer.playing .bar {
-  animation: bounce 0.6s infinite alternate;
-  animation-play-state: paused;
-}
-.island-container:hover .visualizer.playing .bar {
-  animation-play-state: running;
-}
-.visualizer.playing .bar:nth-child(2) { animation-delay: 0.2s; }
-.visualizer.playing .bar:nth-child(3) { animation-delay: 0.4s; }
-@keyframes bounce {
-  0% { transform: scaleY(0.16); }
-  100% { transform: scaleY(1); }
-}
+
+/* Hide the old DOM nodes completely */
+.visualizer .bar { display: none; }
 
 /* Volume Slider */
 .vol-slider {

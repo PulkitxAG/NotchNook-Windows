@@ -15,12 +15,12 @@ function expandIsland() {
     clearTimeout(expansionTimeout);
     if (!isExpanded) {
       isExpanded = true;
-      window.electronAPI.resizeWindow(EXPANDED_WIDTH, EXPANDED_HEIGHT);
-      island.classList.add('expanded');
+      window.electronAPI.setHitbox(480, 200); // Expand the C++ hardware hitbox instantly!
       window.electronAPI.getVolume();
       window.electronAPI.resumeBackground(); // Wake up the heavy native API monitor
+      island.classList.add('expanded'); // Animate instantly with NO delays!
     }
-  }, 60);
+  }, 20);
 }
 
 function collapseIsland() {
@@ -31,14 +31,15 @@ function collapseIsland() {
         isExpanded = false;
         island.classList.remove('expanded');
         window.electronAPI.suspendBackground(); // Kill the heavy native API monitor instantly!
-        setTimeout(() => { if (!isExpanded) window.electronAPI.resizeWindow(COMPACT_WIDTH, COMPACT_HEIGHT); }, 200);
+        window.electronAPI.setHitbox(120, 35); // Shrink the C++ hardware hitbox to the exact CSS size!
       }
     }, 100);
-  }, 60);
+  }, 20);
 }
 
-island.addEventListener('mouseenter', expandIsland);
-island.addEventListener('mouseleave', collapseIsland);
+// Subscribe to native C++ hardware mouse events (Bypasses UIPI Task Manager bug!)
+window.electronAPI.onHoverEnter(expandIsland);
+window.electronAPI.onHoverLeave(collapseIsland);
 
 // Allow drag to trigger expansion
 document.addEventListener('dragenter', expandIsland);

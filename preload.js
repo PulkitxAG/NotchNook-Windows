@@ -1,8 +1,10 @@
 const { contextBridge, ipcRenderer, clipboard } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  // Window Resizing
-  resizeWindow: (w, h) => ipcRenderer.send('resize-window', w, h),
+  // Native Cursor Polling Bridge
+  setHitbox: (w, h) => ipcRenderer.send('set-hitbox', w, h),
+  onHoverEnter: (callback) => ipcRenderer.on('hover-enter', callback),
+  onHoverLeave: (callback) => ipcRenderer.on('hover-leave', callback),
   onToggleExpansion: (callback) => ipcRenderer.on('toggle-expansion', callback),
   
   // Media Controls
