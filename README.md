@@ -2,6 +2,24 @@
 
 A sleek, premium, macOS-style "notch" desktop widget for Windows. NotchNook acts as a stealthy, high-performance system overlay that stays completely hidden until you need it. Built natively in C# WPF for near-zero CPU usage, hardware acceleration, and seamless OS integration.
 
+## 📸 App Showcase
+
+### Stealth Mode (Collapsed)
+![Stealth Mode Notch](screenshots/collapsed.png)
+When inactive, NotchNook hides as a sleek, minimal, hardware-accelerated black pill at the very top of your screen, blending perfectly into your bezel.
+
+### Active Mode (Expanded Nook)
+![Expanded NotchNook UI](screenshots/expanded.png)
+Hovering over the notch instantly expands it into a fully-featured productivity dashboard. 
+
+**Nook Dashboard Features:**
+- **🎵 Global Media Player:** Automatically syncs with Windows (Spotify, YouTube, Chrome, etc.) to show album art, track details, playback controls, and a live audio equalizer.
+- **📅 Dynamic Calendar:** A sleek mini-calendar highlighting today's date and the current week.
+- **🔋 Battery Monitor:** Real-time tracking of your laptop's battery life and charging status.
+- **🌤️ Live Weather:** Instant access to your current local temperature and weather conditions.
+- **🚀 Quick Launch Bar:** A dock of shortcut icons at the bottom for instantly opening essential apps (Terminal, Notes, Explorer, Browser, Trash).
+- **📋 Dual-Tab System:** The header lets you instantly toggle between this dashboard ("Nook") and your complete copy/paste history ("Clipboard").
+
 ## ⚡ Quick Shortcuts
 
 Since NotchNook operates as a stealth background widget without taskbar clutter, you control it entirely via global hotkeys:
