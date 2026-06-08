@@ -2,14 +2,21 @@
 
 A sleek, premium, macOS-style "notch" desktop widget for Windows. NotchNook acts as a stealthy, high-performance system overlay that stays completely hidden until you need it. Built natively in C# WPF for near-zero CPU usage, hardware acceleration, and seamless OS integration.
 
+## ⚡ Quick Shortcuts
+
+Since NotchNook operates as a stealth background widget without taskbar clutter, you control it entirely via global hotkeys:
+
+| Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| **`Alt + N`** | **Hide / Unhide** | Instantly toggles the visibility of the Notch on your screen without killing the app. (Note: NotchNook features a Smart Auto-Hide engine that will also automatically hide itself if you enter a fullscreen game). |
+| **`Alt + Shift + Q`** | **Force Quit** | Completely shuts down the NotchNook background process and frees up system resources. |
+
 ## 📸 App Showcase
 
 ### Stealth Mode (Collapsed)
-![Stealth Mode Notch](screenshots/collapsed.png)
 When inactive, NotchNook hides as a sleek, minimal, hardware-accelerated black pill at the very top of your screen, blending perfectly into your bezel.
 
 ### Active Mode (Expanded Nook)
-![Expanded NotchNook UI](screenshots/expanded.png)
 Hovering over the notch instantly expands it into a fully-featured productivity dashboard. 
 
 **Nook Dashboard Features:**
@@ -19,15 +26,6 @@ Hovering over the notch instantly expands it into a fully-featured productivity 
 - **🌤️ Live Weather:** Instant access to your current local temperature and weather conditions.
 - **🚀 Quick Launch Bar:** A dock of shortcut icons at the bottom for instantly opening essential apps (Terminal, Notes, Explorer, Browser, Trash).
 - **📋 Dual-Tab System:** The header lets you instantly toggle between this dashboard ("Nook") and your complete copy/paste history ("Clipboard").
-
-## ⚡ Quick Shortcuts
-
-Since NotchNook operates as a stealth background widget without taskbar clutter, you control it entirely via global hotkeys:
-
-| Shortcut | Action | Description |
-| :--- | :--- | :--- |
-| **`Alt + N`** | **Hide / Unhide** | Instantly toggles the visibility of the Notch on your screen without killing the app. (Note: NotchNook features a Smart Auto-Hide engine that will also automatically hide itself if you enter a fullscreen game). |
-| **`Alt + Shift + Q`** | **Force Quit** | Completely shuts down the NotchNook background process and frees up system resources. |
 
 ---
 
