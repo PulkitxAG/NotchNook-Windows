@@ -623,6 +623,16 @@ namespace NotchNookNative
         
         private void ResetToNookTab()
         {
+            DashboardView.BeginAnimation(UIElement.OpacityProperty, null);
+            DashboardTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, null);
+            ClipboardView.BeginAnimation(UIElement.OpacityProperty, null);
+            ClipboardTransform.BeginAnimation(System.Windows.Media.TranslateTransform.XProperty, null);
+            
+            TabNookScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
+            TabNookScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
+            TabClipboardScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, null);
+            TabClipboardScale.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, null);
+
             DashboardView.Opacity = 1.0;
             DashboardView.Visibility = Visibility.Visible;
             DashboardTransform.X = 0;
