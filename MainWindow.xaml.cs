@@ -196,6 +196,7 @@ namespace NotchNookNative
                     }
                     else
                     {
+                        ResetToNookTab();
                         this.Visibility = Visibility.Visible;
                         _isManuallyHidden = false;
                     }
@@ -620,30 +621,32 @@ namespace NotchNookNative
         // Because WPF is deeply integrated into the OS Graphics Engine, 
         // we don't need kernel hooks or C++ polling loops! The OS triggers this natively.
         
-        private void MainGrid_MouseEnter(object sender, MouseEventArgs e)
+        private void ResetToNookTab()
         {
-            if (!_isExpanded)
-            {
-                // Force UI state back to Nook Tab instantly before expanding
-                DashboardView.Opacity = 1.0;
-                DashboardView.Visibility = Visibility.Visible;
-                DashboardTransform.X = 0;
-                ClipboardView.Opacity = 0.0;
-                ClipboardView.Visibility = Visibility.Collapsed;
-                ClipboardTransform.X = 20;
-                TabNook.Opacity = 1.0;
-                TabClipboard.Opacity = 0.5;
-
-                _isExpanded = true;
-                Storyboard sb = (Storyboard)FindResource("ExpandStoryboard");
-                sb.Begin();
-                UpdateCalendar();
-            }
+            DashboardView.Opacity = 1.0;
+            DashboardView.Visibility = Visibility.Visible;
+            DashboardTransform.X = 0;
+            
+            ClipboardView.Opacity = 0.0;
+            ClipboardView.Visibility = Visibility.Collapsed;
+            ClipboardTransform.X = 20;
+            
+            TabNook.Foreground = System.Windows.Media.Brushes.White;
+            TabNook.Effect = new System.Windows.Media.Effects.DropShadowEffect { Color = System.Windows.Media.Colors.White, BlurRadius = 4, ShadowDepth = 0, Opacity = 0.4 };
+            
+            TabClipboard.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(136, 136, 136));
+            TabClipboard.Effect = null;
+            
+            TabNookScale.ScaleX = 1.15;
+            TabNookScale.ScaleY = 1.15;
+            TabClipboardScale.ScaleX = 1.0;
+            TabClipboardScale.ScaleY = 1.0;
         }
 
         private void IslandBackground_MouseEnter(object sender, MouseEventArgs e)
         {
             if (_isExpanded) return;
+            ResetToNookTab();
             _isExpanded = true;
             
             var expandStoryboard = (System.Windows.Media.Animation.Storyboard)FindResource("ExpandStoryboard");
