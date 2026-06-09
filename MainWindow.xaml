@@ -440,7 +440,7 @@
                     
                     <TextBlock x:Name="EmptyClipboardMessage" Text="Clipboard is empty" Foreground="#555" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold" Visibility="Visible"/>
                     
-                    <ListBox x:Name="ClipboardList" SelectionChanged="ClipboardList_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False" Background="Transparent" Foreground="White" BorderThickness="0" FontFamily="Segoe UI" FontSize="13" HorizontalContentAlignment="Stretch">
+                    <ListBox x:Name="ClipboardList" SelectionChanged="ClipboardList_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True" VirtualizingPanel.ScrollUnit="Pixel" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" CacheMode="BitmapCache" Background="Transparent" Foreground="White" BorderThickness="0" FontFamily="Segoe UI" FontSize="13" HorizontalContentAlignment="Stretch">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
